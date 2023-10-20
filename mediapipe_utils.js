@@ -34,18 +34,23 @@ const INITIAL_RECORDED_DATA = {
     frame_size: null,
     landmarks: []
 };
+const ERROR_BLOCK = document.getElementById("error-message-block");
+const START_RECORDING_BUTTON = document.getElementById("startRecordingButton");
+const STOP_RECORDING_BUTTON = document.getElementById("stopRecordingButton");
 //
 
 let recording = false;
 let recordedData = INITIAL_RECORDED_DATA;
 
+STOP_RECORDING_BUTTON.disabled = !recording;
+START_RECORDING_BUTTON.disabled = !recording;
 
 async function createPoseLandmarker() {
     try {
         const vision = await FilesetResolver.forVisionTasks(VISION_TASKS_URL);
         return await PoseLandmarker.createFromOptions(vision, POSE_LAND_MARKER_CONFIG);
     } catch (error) {
-        alert('Error creating PoseLandmarker');
+        ERROR_BLOCK.textContent ='Error creating PoseLandmarker';
         throw error;
     }
 }
@@ -76,6 +81,7 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
         }
     });
 
+    START_RECORDING_BUTTON.disabled = recording;
     window.requestAnimationFrame(() => predictWebCam(video, canvas, canvasCtx, poseLandmarker));
 
 }
@@ -83,6 +89,8 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
 function startRecording() {
   recordedData = INITIAL_RECORDED_DATA;
   recording = true;
+  START_RECORDING_BUTTON.disabled = recording;
+  STOP_RECORDING_BUTTON.disabled = !recording;
 }
 
 async function stopRecording() {
@@ -96,10 +104,12 @@ async function stopRecording() {
         const data = await response.json();
         document.getElementById('response').textContent = JSON.stringify(data, null, 2);
     } catch (error) {
-        alert('Error while sending data to the server');
+        ERROR_BLOCK.textContent = 'Error while sending data to the server';
     } finally {
         recordedData = INITIAL_RECORDED_DATA;
         recording = false;
+        START_RECORDING_BUTTON.disabled = recording;
+        STOP_RECORDING_BUTTON.disabled = !recording;
     }
 }
 
