@@ -6,20 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Anitech</title>
 <body>
-  <div id="buttons" style="text-align: center; padding: 5px;">
-    <div id="liveView" class="videoView" style="display: inline">
-      <button id="webcamVideoButton">
-        <span>ENABLE WEBCAM</span>
-      </button>
-    </div>
-    <div id="fileView" class="videoView" style="display: inline">
-      <input type="file" id="fileInput" accept="video/*" style="display: none;">
-      <button id="filevideoButton">
-        <span>LOAD FILE</span>
-      </button>
-    </div>
-  </div>
   <div id="video" style="text-align: center;">
+    <video id="input_stream" style="display: none;"></video>
     <canvas id="output_canvas"></canvas>
   </div>
   <div id='recording_buttons' style="text-align: center; padding: 5px;">
