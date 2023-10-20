@@ -1,27 +1,54 @@
 import {FilesetResolver, PoseLandmarker, DrawingUtils} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js";
-import {download} from './file_utils.js';
 
-const apiKey = 'password';
-let recording = false;
-let recordedData = {
-  'frame_size': null,
-  'landmarks': []
+//constants
+const API_KEY = 'password';
+const API_URl = 'http://localhost:5000/predict_score';
+const SERVER_CONFIG = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': API_KEY,
+    }
 };
+const VISION_TASKS_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm';
+const MODEL_ASSET_PATH = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+
+const POSE_LAND_MARKER_CONFIG = {
+    baseOptions: {
+        modelAssetPath: MODEL_ASSET_PATH
+    },
+    runningMode: "VIDEO",
+    numPoses: 1
+};
+const DRAW_LAND_MARKS_STYLE = {
+    color: '#FF0000',
+    fillColor: '#FF0000',
+    lineWidth: 2,
+    radius: 2
+};
+const DRAW_CONNECTORS_STYLE = {
+    color: '#00FF00',
+    lineWidth: 2
+}
+const INITIAL_RECORDED_DATA = {
+    frame_size: null,
+    landmarks: []
+};
+//
+
+let recording = false;
+let recordedData = INITIAL_RECORDED_DATA;
 
 
 async function createPoseLandmarker() {
-    const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-    );
-    const poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
-      baseOptions: {
-        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task`
-      },
-      runningMode: "VIDEO",
-      numPoses: 1
-    });
-    return poseLandmarker;
-  };
+    try {
+        const vision = await FilesetResolver.forVisionTasks(VISION_TASKS_URL);
+        return await PoseLandmarker.createFromOptions(vision, POSE_LAND_MARKER_CONFIG);
+    } catch (error) {
+        alert('Error creating PoseLandmarker');
+        throw error;
+    }
+}
 
 function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
     canvas.width = video.videoWidth;
@@ -38,8 +65,8 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
         canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
         canvasCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         for (const landmark of result.landmarks) {
-            drawingUtils.drawLandmarks(landmark, {color: '#FF0000', fillColor: '#FF0000', lineWidth: 2, radius: 2});
-            drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 2});
+            drawingUtils.drawLandmarks(landmark, DRAW_LAND_MARKS_STYLE);
+            drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, DRAW_CONNECTORS_STYLE);
         }
 
         canvasCtx.restore();
@@ -51,39 +78,29 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
 
     window.requestAnimationFrame(() => predictWebCam(video, canvas, canvasCtx, poseLandmarker));
 
-    }
+}
 
 function startRecording() {
-  recordedData = {
-    'frame_size': null,
-    'landmarks': []
-  };
+  recordedData = INITIAL_RECORDED_DATA;
   recording = true;
 }
 
-function stopRecording() {
-  // Uncomment to save local landmarks.json file
-  // download(JSON.stringify(recordedData), 'landmarks.json', 'application/json');
-  fetch('http://localhost:5000/predict_score', {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `${apiKey}`
-      },
-    body: JSON.stringify(recordedData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        
-        console.log(data);
+async function stopRecording() {
+    try {
+        const response = await fetch(API_URl, {
+            method: SERVER_CONFIG.method,
+            headers: SERVER_CONFIG.headers,
+            body: JSON.stringify(recordedData),
+        });
+
+        const data = await response.json();
         document.getElementById('response').textContent = JSON.stringify(data, null, 2);
-    });
-  recordedData = {
-    'frame_size': null,
-    'landmarks': []
-  };
-  recording = false;
+    } catch (error) {
+        alert('Error while sending data to the server');
+    } finally {
+        recordedData = INITIAL_RECORDED_DATA;
+        recording = false;
+    }
 }
 
 function recordData(data) {
