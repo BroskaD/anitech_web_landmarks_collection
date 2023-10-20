@@ -1,4 +1,3 @@
-import { toggleRecordingButtons } from './control_utils.js';
 import { createPoseLandmarker, predictWebCam, startRecording, stopRecording } from './mediapipe_utils.js';
 
 const canvas = document.getElementById('output_canvas');
@@ -21,7 +20,6 @@ async function enableWebCameraStream(){
     video.srcObject = stream;
     video.addEventListener('loadeddata', () => {predictWebCam(video, canvas, canvasCtx, poseLandmarker)});
     video.addEventListener('loadeddata', () => {video.play()});
-    toggleRecordingButtons('visible');
   } catch (error) {
     console.error('Error accessing webcam:', error);
   }
