@@ -35,8 +35,6 @@ const INITIAL_RECORDED_DATA = {
     landmarks: []
 };
 
-const DEBUG_BLOCK = document.getElementById("debug-message-block");
-
 const VIDEO = document.getElementById('input_stream');
 const ERROR_BLOCK = document.getElementById("error-message-block");
 const START_RECORDING_BUTTON = document.getElementById("startRecordingButton");
@@ -67,7 +65,7 @@ async function createPoseLandmarker() {
   }
 }
 
-function predictWebCam(video, canvas, canvasCtx, poseLandmarker, initialized) {
+function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
   if (window.innerWidth > window.innerHeight) {
       canvas.width = video.videoWidth * (window.innerHeight * 0.9 / video.videoHeight);
       canvas.height = window.innerHeight * 0.9;
@@ -83,11 +81,6 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker, initialized) {
   }
 
   let startTimeMs = performance.now();
-
-  DEBUG_BLOCK.innerHTML += "<br>";
-  DEBUG_BLOCK.innerHTML += 'predictWebCam function started';
-  DEBUG_BLOCK.innerHTML += `${startTimeMs} ms`;
-
   poseLandmarker.detectForVideo(video, startTimeMs, (result) => {
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
@@ -105,7 +98,7 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker, initialized) {
   });
 
   START_RECORDING_BUTTON.disabled = recording;
-  window.requestAnimationFrame(() => predictWebCam(video, canvas, canvasCtx, poseLandmarker, true));
+  window.requestAnimationFrame(() => predictWebCam(video, canvas, canvasCtx, poseLandmarker));
 
 }
 
@@ -141,13 +134,11 @@ function recordData(data) {
 }
 
 async function enableWebCameraStream(){
-
-  DEBUG_BLOCK.innerHTML += 'enableWebcameraStream function started';
-
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     VIDEO.srcObject = stream;
-    VIDEO.addEventListener('loadeddata', () => {predictWebCam(VIDEO, CANVAS, CANVAS_CTX, POSE_LANDMARKER, false)});
+    console.log(stream);
+    VIDEO.addEventListener('loadeddata', () => {predictWebCam(VIDEO, CANVAS, CANVAS_CTX, POSE_LANDMARKER)});
     VIDEO.addEventListener('loadeddata', () => {VIDEO.play()});
   } catch (error) {
     console.error('Error accessing webcam:', error);
