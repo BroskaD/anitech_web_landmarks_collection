@@ -65,15 +65,17 @@ async function createPoseLandmarker() {
   }
 }
 
-function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
-  if (window.innerWidth > window.innerHeight) {
-      canvas.width = video.videoWidth * (window.innerHeight / video.videoHeight);
-      canvas.height = window.innerHeight;
-      ERROR_BLOCK.textContent = `Canvas width: ${canvas.width}; Canvas height: ${canvas.height}`;
-  } else {
-      canvas.width = window.innerWidth ;
-      canvas.height = video.videoHeight * (window.innerWidth / video.videoWidth);
-      ERROR_BLOCK.textContent = `Canvas width: ${canvas.width}; Canvas height: ${canvas.height}`;
+function predictWebCam(video, canvas, canvasCtx, poseLandmarker, initialized) {
+  if (!initialized) {
+      if (window.innerWidth > window.innerHeight) {
+          canvas.width = video.videoWidth * (window.innerHeight / video.videoHeight);
+          canvas.height = window.innerHeight;
+          ERROR_BLOCK.textContent = `Canvas width: ${canvas.width}; Canvas height: ${canvas.height}`;
+      } else {
+          canvas.width = window.innerWidth ;
+          canvas.height = video.videoHeight * (window.innerWidth / video.videoWidth);
+          ERROR_BLOCK.textContent = `Canvas width: ${canvas.width}; Canvas height: ${canvas.height}`;
+      }
   }
 
   if (recordedData['frame_size'] === null) {
@@ -98,7 +100,7 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
   });
 
   START_RECORDING_BUTTON.disabled = recording;
-  window.requestAnimationFrame(() => predictWebCam(video, canvas, canvasCtx, poseLandmarker));
+  window.requestAnimationFrame(() => predictWebCam(video, canvas, canvasCtx, poseLandmarker, true));
 
 }
 
@@ -138,7 +140,7 @@ async function enableWebCameraStream(){
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     VIDEO.srcObject = stream;
-    VIDEO.addEventListener('loadeddata', () => {predictWebCam(VIDEO, CANVAS, CANVAS_CTX, POSE_LANDMARKER)});
+    VIDEO.addEventListener('loadeddata', () => {predictWebCam(VIDEO, CANVAS, CANVAS_CTX, POSE_LANDMARKER, false)});
     VIDEO.addEventListener('loadeddata', () => {VIDEO.play()});
   } catch (error) {
     console.error('Error accessing webcam:', error);
