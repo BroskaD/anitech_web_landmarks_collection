@@ -137,8 +137,10 @@ async function enableWebCameraStream(){
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     VIDEO.srcObject = stream;
-    console.log(stream);
+    // console.log(JSON.stringify(stream));
     VIDEO.setAttribute('playsinline', '');
+    VIDEO.setAttribute('muted', '');
+    VIDEO.setAttribute('autoplay', '');
     VIDEO.addEventListener('loadeddata', () => {predictWebCam(VIDEO, CANVAS, CANVAS_CTX, POSE_LANDMARKER)});
     VIDEO.addEventListener('loadeddata', () => {VIDEO.play()});
   } catch (error) {
