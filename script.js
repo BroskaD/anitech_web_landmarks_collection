@@ -35,6 +35,8 @@ const INITIAL_RECORDED_DATA = {
     landmarks: []
 };
 
+const DEBUG_BLOCK = document.getElementById("debug-message-block");
+
 const VIDEO = document.getElementById('input_stream');
 const ERROR_BLOCK = document.getElementById("error-message-block");
 const START_RECORDING_BUTTON = document.getElementById("startRecordingButton");
@@ -81,6 +83,11 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker, initialized) {
   }
 
   let startTimeMs = performance.now();
+
+  DEBUG_BLOCK.innerHTML += "<br>";
+  DEBUG_BLOCK.innerHTML += 'predictWebCam function started';
+  DEBUG_BLOCK.innerHTML += `${startTimeMs} ms`;
+
   poseLandmarker.detectForVideo(video, startTimeMs, (result) => {
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
@@ -134,6 +141,8 @@ function recordData(data) {
 }
 
 async function enableWebCameraStream(){
+
+  DEBUG_BLOCK.innerHTML += 'enableWebcameraStream function started';
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
