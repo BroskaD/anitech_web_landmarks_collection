@@ -66,8 +66,8 @@ async function createPoseLandmarker() {
 }
 
 function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  canvas.width = video.videoWidth * (window.innerHeight / video.videoHeight);
+  canvas.height = window.innerHeight;
 
   if (recordedData['frame_size'] === null) {
     recordedData['frame_size'] = [canvas.width, canvas.height]
@@ -77,7 +77,7 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
   poseLandmarker.detectForVideo(video, startTimeMs, (result) => {
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-      canvasCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      canvasCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
       for (const landmark of result.landmarks) {
           DRAWING_UTILS.drawLandmarks(landmark, DRAW_LAND_MARKS_STYLE);
           DRAWING_UTILS.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, DRAW_CONNECTORS_STYLE);
