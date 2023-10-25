@@ -69,11 +69,9 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
   if (window.innerWidth > window.innerHeight) {
       canvas.width = video.videoWidth * (window.innerHeight * 0.9 / video.videoHeight);
       canvas.height = window.innerHeight * 0.9;
-      ERROR_BLOCK.textContent = `Canvas width: ${canvas.width}; Canvas height: ${canvas.height}`;
   } else {
       canvas.width = window.innerWidth * 0.9;
       canvas.height = video.videoHeight * (window.innerWidth * 0.9 / video.videoWidth);
-      ERROR_BLOCK.textContent = `Canvas width: ${canvas.width}; Canvas height: ${canvas.height}`;
   }
 
   if (recordedData['frame_size'] === null) {
@@ -110,6 +108,7 @@ STOP_RECORDING_BUTTON.disabled = !recording;
 }
 
 async function stopRecording() {
+  let data = null;  
   try {
       const response = await fetch(API_URl, {
           method: SERVER_CONFIG.method,
@@ -117,16 +116,24 @@ async function stopRecording() {
           body: JSON.stringify(recordedData),
       });
 
-      const data = await response.json();
-      document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+      data = await response.json();
+    
   } catch (error) {
-      ERROR_BLOCK.textContent = 'Error while sending data to the server';
+      data = {'message': 'Error while sending data to the server'}
   } finally {
       recordedData = INITIAL_RECORDED_DATA;
       recording = false;
       START_RECORDING_BUTTON.disabled = recording;
       STOP_RECORDING_BUTTON.disabled = !recording;
   }
+
+  if (window.top != window.self) {
+    window.top.postMessage('iframe.close', '*');
+    window.top.postMessage(data, '*');
+  } else {
+    document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+  }
+
 }
 
 function recordData(data) {
@@ -137,7 +144,6 @@ async function enableWebCameraStream(){
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     VIDEO.srcObject = stream;
-    // console.log(JSON.stringify(stream));
     VIDEO.setAttribute('playsinline', '');
     VIDEO.setAttribute('muted', '');
     VIDEO.setAttribute('autoplay', '');
