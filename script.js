@@ -68,11 +68,11 @@ async function createPoseLandmarker() {
 
 function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
   if (window.innerWidth > window.innerHeight) {
-      canvas.width = video.videoWidth * ((window.innerHeight - START_RECORDING_BUTTON_HEIGHT) * 0.8 / video.videoHeight);
-      canvas.height = (window.innerHeight - START_RECORDING_BUTTON_HEIGHT) * 0.8;
+      canvas.width = video.videoWidth * ((window.innerHeight - START_RECORDING_BUTTON_HEIGHT) * 0.9 / video.videoHeight);
+      canvas.height = (window.innerHeight - START_RECORDING_BUTTON_HEIGHT) * 0.9;
   } else {
-      canvas.width = window.innerWidth * 0.8;
-      canvas.height = video.videoHeight * (window.innerWidth * 0.8 / video.videoWidth) - START_RECORDING_BUTTON_HEIGHT;
+      canvas.width = window.innerWidth * 0.9;
+      canvas.height = video.videoHeight * (window.innerWidth * 0.9 / video.videoWidth) - START_RECORDING_BUTTON_HEIGHT;
   }
 
   if (recordedData['frame_size'] === null) {
