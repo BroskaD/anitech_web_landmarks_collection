@@ -102,10 +102,10 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
 }
 
 function startRecording() {
-recordedData = INITIAL_RECORDED_DATA;
-recording = true;
-START_RECORDING_BUTTON.disabled = recording;
-STOP_RECORDING_BUTTON.disabled = !recording;
+    recordedData = INITIAL_RECORDED_DATA;
+    recording = true;
+    START_RECORDING_BUTTON.disabled = recording;
+    STOP_RECORDING_BUTTON.disabled = !recording;
 }
 
 async function stopRecording() {
