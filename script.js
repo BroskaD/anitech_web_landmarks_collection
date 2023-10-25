@@ -38,6 +38,7 @@ const INITIAL_RECORDED_DATA = {
 const VIDEO = document.getElementById('input_stream');
 const ERROR_BLOCK = document.getElementById("error-message-block");
 const START_RECORDING_BUTTON = document.getElementById("startRecordingButton");
+const START_RECORDING_BUTTON_HEIGHT = START_RECORDING_BUTTON.offsetHeight;
 const STOP_RECORDING_BUTTON = document.getElementById("stopRecordingButton");
 const CANVAS = document.getElementById('output_canvas');
 const CANVAS_CTX = CANVAS.getContext('2d');
@@ -67,11 +68,11 @@ async function createPoseLandmarker() {
 
 function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
   if (window.innerWidth > window.innerHeight) {
-      canvas.width = video.videoWidth * (window.innerHeight * 0.9 / video.videoHeight);
-      canvas.height = window.innerHeight * 0.9;
+      canvas.width = video.videoWidth * ((window.innerHeight - START_RECORDING_BUTTON_HEIGHT) * 0.9 / video.videoHeight);
+      canvas.height = (window.innerHeight - START_RECORDING_BUTTON_HEIGHT) * 0.9;
   } else {
       canvas.width = window.innerWidth * 0.9;
-      canvas.height = video.videoHeight * (window.innerWidth * 0.9 / video.videoWidth);
+      canvas.height = video.videoHeight * (window.innerWidth * 0.9 / video.videoWidth) - START_RECORDING_BUTTON_HEIGHT;
   }
 
   if (recordedData['frame_size'] === null) {
