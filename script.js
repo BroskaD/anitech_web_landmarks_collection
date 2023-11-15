@@ -2,12 +2,12 @@ import {FilesetResolver, PoseLandmarker, DrawingUtils} from "https://cdn.jsdeliv
 
 //constants
 const API_KEY = 'password';
-const API_URl = 'http://localhost:5000/predict_score';
+const API_URl = '/predict_score';
 const SERVER_CONFIG = {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': API_KEY,
+        'Authorization': API_KEY
     }
 };
 const VISION_TASKS_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm';
@@ -30,16 +30,13 @@ const DRAW_CONNECTORS_STYLE = {
     color: '#00FF00',
     lineWidth: 2
 }
-const INITIAL_RECORDED_DATA = {
-    frame_size: null,
-    landmarks: []
-};
 
 const VIDEO = document.getElementById('input_stream');
 const ERROR_BLOCK = document.getElementById("error-message-block");
 const START_RECORDING_BUTTON = document.getElementById("startRecordingButton");
 const START_RECORDING_BUTTON_HEIGHT = START_RECORDING_BUTTON.offsetHeight;
 const STOP_RECORDING_BUTTON = document.getElementById("stopRecordingButton");
+const CONTINUE_WITH_VIDEO_BUTTON = document.getElementById("continueWithVideoButton");
 const CANVAS = document.getElementById('output_canvas');
 const CANVAS_CTX = CANVAS.getContext('2d');
 //
@@ -48,13 +45,17 @@ const DRAWING_UTILS = new DrawingUtils(CANVAS_CTX);
 const POSE_LANDMARKER = await createPoseLandmarker();
 
 let recording = false;
-let recordedData = INITIAL_RECORDED_DATA;
+const recordedData = {
+    frame_size: null,
+    landmarks: []
+};
 
 STOP_RECORDING_BUTTON.disabled = !recording;
 START_RECORDING_BUTTON.disabled = !recording;
 
 START_RECORDING_BUTTON.addEventListener('click', startRecording);
 STOP_RECORDING_BUTTON.addEventListener('click', stopRecording);
+CONTINUE_WITH_VIDEO_BUTTON.addEventListener('click', closeIFrame);
 
 async function createPoseLandmarker() {
   try {
@@ -102,14 +103,19 @@ function predictWebCam(video, canvas, canvasCtx, poseLandmarker) {
 }
 
 function startRecording() {
-    recordedData = INITIAL_RECORDED_DATA;
+    resetResponseField();
+    resetRecordedData();
     recording = true;
     START_RECORDING_BUTTON.disabled = recording;
     STOP_RECORDING_BUTTON.disabled = !recording;
 }
 
 async function stopRecording() {
-  let data = null;  
+  let data = null;
+  let message = '';
+  recording = false;
+  START_RECORDING_BUTTON.disabled = recording;
+  STOP_RECORDING_BUTTON.disabled = !recording;
   try {
       const response = await fetch(API_URl, {
           method: SERVER_CONFIG.method,
@@ -118,23 +124,28 @@ async function stopRecording() {
       });
 
       data = await response.json();
-    
+
+      if (data['final_result'] === 'Good'){
+        message = "Great Job! You're a Pro!";
+      } else if (data['final_result'] === 'Moderate'){
+        message = "Not bad, but it could be better!";
+      } else {
+        message = "That's not quite right, re-watch the video and try again!";
+      }
+
   } catch (error) {
-      data = {'message': 'Error while sending data to the server'}
+      message = "Error while sending data to the server";
   } finally {
-      recordedData = INITIAL_RECORDED_DATA;
-      recording = false;
-      START_RECORDING_BUTTON.disabled = recording;
-      STOP_RECORDING_BUTTON.disabled = !recording;
+      resetRecordedData();
+      document.getElementById('response').textContent = message;
   }
 
-  if (window.top != window.self) {
-    window.top.postMessage('iframe.close', '*');
-    window.top.postMessage(data, '*');
-  } else {
-    document.getElementById('response').textContent = JSON.stringify(data, null, 2);
-  }
+}
 
+function closeIFrame() {
+    if (window.top != window.self) {
+        window.top.postMessage('iframe.close', '*');
+    }
 }
 
 function recordData(data) {
@@ -153,6 +164,15 @@ async function enableWebCameraStream(){
   } catch (error) {
     console.error('Error accessing webcam:', error);
   }
+}
+
+function resetRecordedData(){
+    recordedData['frame_size'] = null;
+    recordedData['landmarks'] = [];
+}
+
+function resetResponseField(){
+    document.getElementById('response').textContent = '';
 }
 
 enableWebCameraStream();

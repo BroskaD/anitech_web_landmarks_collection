@@ -17,10 +17,13 @@
     <div style="display: inline;">
       <button id="stopRecordingButton" style="height: 40px;">Stop Recording</button>
     </div>
+    <div style="display: inline;">
+      <button id="continueWithVideoButton" style="height: 40px;">Continue with video</button>
+    </div>
   </div>
   <div id="response", style="text-align: center; padding: 5px;"></div>
 
-  <script src="./script.js" type="module"></script>
+  <script src="{{ url_for('static', filename='script.js') }}" type="module"></script>
 
 </body>
 </html>
